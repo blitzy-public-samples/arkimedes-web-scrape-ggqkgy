@@ -1,0 +1,153 @@
+# Istio Service Mesh Configuration Values v1.18+
+# Purpose: Configure Istio service mesh for web scraping platform with enhanced security and observability
+# Integration: Works with Kubernetes 1.27+ and network policies
+
+# Global configuration settings
+global:
+  proxy:
+    # Resource allocation for Istio sidecars
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+    # Distributed tracing configuration
+    tracer:
+      zipkin:
+        address: "jaeger-collector.monitoring:9411"
+
+# Mesh configuration profile
+profile: "default"
+meshConfig:
+  enableTracing: true
+  defaultConfig:
+    tracing:
+      sampling: 100  # 100% trace sampling for comprehensive observability
+      zipkin:
+        address: "jaeger-collector.monitoring:9411"
+      customTags:
+        environment: "production"
+        region: "us-west-2"
+  enableAutoMtls: true  # Enable automatic mutual TLS
+  accessLogFile: "/dev/stdout"
+  accessLogEncoding: "JSON"
+  accessLogFormat: '[%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%"'
+
+# Control plane configuration
+pilot:
+  enabled: true
+  autoscaleEnabled: true
+  autoscaleMin: 2
+  autoscaleMax: 5
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2Gi"
+    limits:
+      cpu: "1"
+      memory: "4Gi"
+  traceSampling: 1.0
+  keepaliveMaxServerConnectionAge: "30m"
+  configMap: true
+  env:
+    PILOT_ENABLE_STATUS: true
+    PILOT_TRACE_SAMPLING: 100
+
+# Gateway configurations
+egressGateways:
+  enabled: true
+  autoscaleEnabled: true
+  autoscaleMin: 2
+  autoscaleMax: 5
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "2000m"
+      memory: "1024Mi"
+
+ingressGateways:
+  enabled: true
+  autoscaleEnabled: true
+  autoscaleMin: 2
+  autoscaleMax: 5
+  serviceAnnotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "2000m"
+      memory: "1024Mi"
+
+# Addon components configuration
+addons:
+  grafana:
+    enabled: true
+    persist: true
+    storageClassName: "gp2"
+    accessMode: "ReadWriteOnce"
+    size: "10Gi"
+    security:
+      enabled: true
+      adminPassword: "${GRAFANA_ADMIN_PASSWORD}"
+      adminUser: "admin"
+
+  kiali:
+    enabled: true
+    dashboard:
+      auth:
+        strategy: "token"
+      viewOnlyMode: false
+      grafanaURL: "http://grafana:3000"
+
+  prometheus:
+    enabled: true
+    scrapeInterval: "15s"
+    retention: "30d"
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "2Gi"
+      limits:
+        cpu: "1000m"
+        memory: "4Gi"
+    persistentVolume:
+      enabled: true
+      storageClass: "gp2"
+      size: "50Gi"
+
+  tracing:
+    enabled: true
+    provider: "jaeger"
+    jaeger:
+      persistence:
+        enabled: true
+        storageClassName: "gp2"
+        size: "50Gi"
+        accessMode: "ReadWriteOnce"
+      memory:
+        max_traces: 100000
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "1Gi"
+        limits:
+          cpu: "1000m"
+          memory: "2Gi"
+
+# Security configuration
+security:
+  mtls:
+    enabled: true
+    mode: "STRICT"
+    autoMtls: true
+  rbacConfig:
+    enabled: true
+    mode: "ON_WITH_INCLUSION"
+    enforcement_mode: "ENFORCED"
