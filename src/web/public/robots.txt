@@ -1,0 +1,51 @@
+# Web Scraping Platform - Robots Exclusion Protocol (RFC 9309)
+# Last Updated: 2024
+# Contact: webmaster@example.com
+
+# Global rules for all crawlers
+User-agent: *
+# Protected application paths
+Disallow: /api/
+Disallow: /auth/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /tasks/
+Disallow: /admin/
+Disallow: /internal/
+Disallow: /private/
+# Public paths
+Allow: /
+Allow: /public/
+Allow: /manifest.json
+Allow: /robots.txt
+Allow: /sitemap.xml
+# Rate limiting - delay between requests in seconds
+Crawl-delay: 10
+
+# Specific rules for Googlebot
+User-agent: Googlebot
+# Protected application paths
+Disallow: /api/
+Disallow: /auth/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /tasks/
+Disallow: /admin/
+Disallow: /internal/
+Disallow: /private/
+# Public paths
+Allow: /
+Allow: /public/
+Allow: /manifest.json
+Allow: /robots.txt
+Allow: /sitemap.xml
+
+# XML Sitemap location
+Sitemap: /sitemap.xml
+
+# Additional security notes:
+# - API endpoints (/api/) are protected to prevent unauthorized access
+# - Authentication paths (/auth/) are restricted for security
+# - Private dashboards and settings are excluded from indexing
+# - Only explicitly allowed public paths are accessible
+# - Rate limiting is enforced to prevent abuse
