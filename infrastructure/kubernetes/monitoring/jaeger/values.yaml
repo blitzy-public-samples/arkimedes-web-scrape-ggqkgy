@@ -1,0 +1,119 @@
+# Jaeger Helm Chart Values Configuration
+# Chart Version: 1.45.0
+# Kubernetes Version: 1.27+
+
+# Disable all-in-one deployment as we're using production-ready distributed setup
+allInOne:
+  enabled: false
+
+# Collector configuration
+collector:
+  enabled: true
+  replicaCount: 2
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+  service:
+    type: ClusterIP
+    ports:
+      - name: jaeger-collector-grpc
+        port: 14250
+        protocol: TCP
+        targetPort: 14250
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 80
+
+# Query service configuration
+query:
+  enabled: true
+  replicaCount: 2
+  resources:
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    hosts:
+      - jaeger.scraping-platform.com
+    tls:
+      - secretName: jaeger-tls
+        hosts:
+          - jaeger.scraping-platform.com
+
+# Agent configuration
+agent:
+  enabled: true
+  daemonset:
+    useHostPort: false
+  resources:
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+
+# Storage configuration using Elasticsearch
+storage:
+  type: elasticsearch
+  options:
+    es:
+      server-urls: http://elasticsearch-master.logging:9200
+      username: elastic
+      password: ${ELASTIC_PASSWORD}
+      tls:
+        enabled: true
+        skip-host-verify: false
+        ca: /etc/elasticsearch/certs/ca.crt
+      num-shards: 5
+      num-replicas: 1
+      max-doc-count: 10000000
+
+# Disable internal Elasticsearch as we're using external cluster
+elasticsearch:
+  enabled: false
+
+# Prometheus ServiceMonitor configuration
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: prometheus
+  interval: "30s"
+  scrapeTimeout: "10s"
+
+# Network policies for security
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - namespaceSelector:
+            matchLabels:
+              name: app
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: logging
+      ports:
+        - port: 9200
+          protocol: TCP
