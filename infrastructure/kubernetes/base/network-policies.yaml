@@ -1,0 +1,97 @@
+# Kubernetes NetworkPolicy resources v1.27+
+# Purpose: Implement zero-trust network security model with granular pod-to-pod access controls
+# Integration: Works with CNI plugins supporting NetworkPolicy (e.g., Calico, Cilium)
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  annotations:
+    description: "Zero-trust baseline policy"
+    security-level: "strict"
+spec:
+  podSelector: {} # Applies to all pods in namespace
+  policyTypes:
+    - Ingress
+  ingress: [] # Empty ingress rules = deny all
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-ingress
+  annotations:
+    description: "Frontend ingress policy"
+    security-level: "controlled"
+spec:
+  podSelector:
+    matchLabels:
+      app: web-scraper
+      component: frontend
+      environment: production
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+              type: ingress-controller
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-ingress
+  annotations:
+    description: "Backend ingress policy"
+    security-level: "strict"
+spec:
+  podSelector:
+    matchLabels:
+      app: web-scraper
+      component: backend
+      environment: production
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: web-scraper
+              component: frontend
+              environment: production
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring
+  annotations:
+    description: "Monitoring ingress policy"
+    security-level: "controlled"
+spec:
+  podSelector:
+    matchLabels:
+      scrape: enabled
+      monitoring: prometheus
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+              type: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+          name: metrics
