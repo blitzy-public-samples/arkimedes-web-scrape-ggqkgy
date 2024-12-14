@@ -1,0 +1,164 @@
+# Cert-manager Helm values configuration
+# Version: v1.12.0
+# Purpose: Manages TLS certificates and automated certificate lifecycle
+
+# Global settings
+global:
+  logLevel: 2
+  leaderElection:
+    namespace: cert-manager
+    leaseDuration: "15s"
+    renewDeadline: "10s"
+    retryPeriod: "2s"
+
+# Installation configuration
+installCRDs: true
+replicaCount: 2
+
+# Image configuration
+image:
+  repository: quay.io/jetstack/cert-manager-controller
+  tag: v1.12.0
+  pullPolicy: IfNotPresent
+
+# Resource allocation
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# High availability configuration
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Security context
+securityContext:
+  enabled: true
+  fsGroup: 1001
+  runAsUser: 1001
+  runAsNonRoot: true
+
+# Prometheus monitoring integration
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: true
+    namespace: monitoring
+    labels:
+      release: prometheus
+    interval: 30s
+    scrapeTimeout: 25s
+  metrics:
+    certificateExpiryDays: [30, 14, 7]
+    renewalThreshold: "720h"
+
+# Additional arguments for enhanced security and performance
+extraArgs:
+  - --dns01-recursive-nameservers=8.8.8.8:53,1.1.1.1:53
+  - --dns01-recursive-nameservers-only=true
+  - --enable-certificate-owner-ref=true
+  - --max-concurrent-challenges=60
+  - --feature-gates=AdditionalCertificateOutputFormats=true
+
+# Webhook configuration
+webhook:
+  replicaCount: 2
+  timeoutSeconds: 10
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# CA Injector configuration
+cainjector:
+  enabled: true
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# Cluster Issuers configuration
+clusterIssuers:
+  letsencrypt-prod:
+    enabled: true
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: ${ACME_EMAIL}
+    privateKeySecretRef: letsencrypt-prod-key
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+            podTemplate:
+              spec:
+                nodeSelector:
+                  kubernetes.io/os: linux
+                tolerations:
+                  - key: CriticalAddonsOnly
+                    operator: Exists
+                securityContext:
+                  runAsNonRoot: true
+                  seccompProfile:
+                    type: RuntimeDefault
+
+  letsencrypt-staging:
+    enabled: true
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: ${ACME_EMAIL}
+    privateKeySecretRef: letsencrypt-staging-key
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+            podTemplate:
+              spec:
+                nodeSelector:
+                  kubernetes.io/os: linux
+                securityContext:
+                  runAsNonRoot: true
+                  seccompProfile:
+                    type: RuntimeDefault
+
+# Affinity and anti-affinity rules
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - cert-manager
+          topologyKey: kubernetes.io/hostname
+
+# Node selector for platform compatibility
+nodeSelector:
+  kubernetes.io/os: linux
+
+# Tolerations for critical addon deployment
+tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+  - key: node-role.kubernetes.io/master
+    effect: NoSchedule
+
+# Service account configuration
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::${AWS_ACCOUNT_ID}:role/cert-manager-role"
+
+# Priority class for pod scheduling
+priorityClassName: "system-cluster-critical"
