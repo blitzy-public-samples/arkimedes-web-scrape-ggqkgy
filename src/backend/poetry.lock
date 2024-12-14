@@ -1,0 +1,178 @@
+[[package]]
+name = "fastapi"
+version = "0.100.0"
+description = "FastAPI framework, high performance, easy to learn, fast to code, ready for production"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "fastapi-0.100.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "fastapi-0.100.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+pydantic = ">=2.0.0"
+starlette = ">=0.27.0"
+typing-extensions = ">=4.6.0"
+
+[[package]]
+name = "playwright"
+version = "1.38.0"
+description = "Python version of the Playwright testing and automation library"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "playwright-1.38.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "playwright-1.38.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+pyee = ">=9.0.0"
+websockets = ">=10.0"
+greenlet = ">=2.0.0"
+
+[[package]]
+name = "aiohttp"
+version = "3.8.5"
+description = "Async HTTP client/server framework"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "aiohttp-3.8.5-py3-none-any.whl", hash = "sha256:..."},
+    {file = "aiohttp-3.8.5.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+async-timeout = ">=4.0.0"
+multidict = ">=4.5.0"
+yarl = ">=1.7.0"
+
+[[package]]
+name = "sqlalchemy"
+version = "2.0.0"
+description = "Database Abstraction Library"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "SQLAlchemy-2.0.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "SQLAlchemy-2.0.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+greenlet = ">=2.0.0"
+typing-extensions = ">=4.6.0"
+
+[[package]]
+name = "beautifulsoup4"
+version = "4.12.0"
+description = "Screen-scraping library"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "beautifulsoup4-4.12.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "beautifulsoup4-4.12.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+soupsieve = ">=2.0"
+
+[[package]]
+name = "pandas"
+version = "2.1.0"
+description = "Powerful data structures for data analysis, time series, and statistics"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "pandas-2.1.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "pandas-2.1.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+numpy = ">=1.24.0"
+python-dateutil = ">=2.8.0"
+pytz = ">=2020.1"
+
+# Development Dependencies
+[[package]]
+name = "pytest"
+version = "7.4.0"
+description = "pytest: simple powerful testing with Python"
+category = "dev"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "pytest-7.4.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "pytest-7.4.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+iniconfig = "*"
+packaging = "*"
+pluggy = ">=1.0.0"
+
+[[package]]
+name = "black"
+version = "23.7.0"
+description = "The uncompromising code formatter"
+category = "dev"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "black-23.7.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "black-23.7.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+click = ">=8.0.0"
+mypy-extensions = ">=0.4.3"
+pathspec = ">=0.9.0"
+
+[[package]]
+name = "isort"
+version = "5.12.0"
+description = "A Python utility / library to sort Python imports"
+category = "dev"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "isort-5.12.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "isort-5.12.0.tar.gz", hash = "sha256:..."}
+]
+
+[[package]]
+name = "mypy"
+version = "1.5.0"
+description = "Optional static typing for Python"
+category = "dev"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "mypy-1.5.0-py3-none-any.whl", hash = "sha256:..."},
+    {file = "mypy-1.5.0.tar.gz", hash = "sha256:..."}
+]
+
+[package.dependencies]
+mypy-extensions = ">=1.0.0"
+typing-extensions = ">=4.6.0"
+
+[metadata]
+lock-version = "2.0"
+python-versions = ">=3.11"
+content-hash = "sha256:..."
+generated-at = "2024-01-20T00:00:00Z"
+
+[metadata.files]
+
+[build-system]
+requires = ["poetry-core>=1.5.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+
+[tool.poetry.group.dev.dependencies]
