@@ -1,0 +1,58 @@
+# Kubernetes Service resource for web scraping platform backend
+# Version: v1
+# Dependencies:
+# - kubernetes: v1.27+
+# - backend deployment: ./deployment.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: app
+  labels:
+    app: web-scraper
+    component: backend
+    tier: backend
+    part-of: web-scraping-platform
+    version: v1
+  annotations:
+    # Prometheus monitoring configuration
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+    # Enable topology aware routing
+    service.kubernetes.io/topology-aware-hints: "auto"
+    # Service description
+    description: "Web Scraping Platform Backend Service"
+    maintainer: "DevOps Team"
+
+spec:
+  type: ClusterIP
+  # Port configuration matching deployment container ports
+  ports:
+    - name: http
+      port: 80  # External service port
+      targetPort: 8000  # Container port from deployment
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  
+  # Selector matching deployment pod labels
+  selector:
+    app: web-scraper
+    component: backend
+  
+  # Session handling configuration
+  sessionAffinity: None
+  
+  # Topology aware routing configuration
+  topologyKeys:
+    - "topology.kubernetes.io/zone"
+    - "topology.kubernetes.io/region"
+    - "*"
+  
+  # Additional service configurations
+  publishNotReadyAddresses: false
+  internalTrafficPolicy: Cluster
