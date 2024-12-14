@@ -1,0 +1,143 @@
+# Elasticsearch Helm Chart Values
+# Version: elastic/elasticsearch:8.0
+# Purpose: Production-grade Elasticsearch deployment for centralized logging
+
+# Cluster Configuration
+clusterName: scraping-platform-logs
+nodeGroup: master
+masterService: elasticsearch-master
+
+# Node Roles
+roles:
+  master: true
+  data: true
+  ingest: true
+
+# High Availability Settings
+replicas: 3
+minimumMasterNodes: 2
+
+# Elasticsearch Configuration
+esConfig:
+  elasticsearch.yml:
+    cluster.name: scraping-platform-logs
+    network.host: 0.0.0.0
+    discovery.seed_hosts: elasticsearch-master
+    cluster.initial_master_nodes: elasticsearch-master-0,elasticsearch-master-1,elasticsearch-master-2
+    
+    # Security Settings
+    xpack.security.enabled: true
+    xpack.security.transport.ssl.enabled: true
+    
+    # Monitoring and Management
+    xpack.monitoring.enabled: true
+    xpack.watcher.enabled: true
+    
+    # Data and Log Paths
+    path.data: /usr/share/elasticsearch/data
+    path.logs: /usr/share/elasticsearch/logs
+    
+    # Index Management
+    indices.lifecycle.enabled: true
+    indices.recovery.max_bytes_per_sec: 50mb
+    search.max_buckets: 100000
+    thread_pool.write.queue_size: 1000
+
+# Resource Management
+resources:
+  requests:
+    cpu: 2000m
+    memory: 4Gi
+  limits:
+    cpu: 4000m
+    memory: 8Gi
+
+# Persistent Storage
+volumeClaimTemplate:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: gp2
+
+# Security Context
+securityContext:
+  runAsUser: 1000
+  fsGroup: 1000
+  runAsNonRoot: true
+
+podSecurityContext:
+  runAsUser: 1000
+  fsGroup: 1000
+  runAsNonRoot: true
+
+# Service Configuration
+service:
+  type: ClusterIP
+  port: 9200
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9200"
+    prometheus.io/path: "/_prometheus/metrics"
+
+# Ingress Configuration
+ingress:
+  enabled: false
+
+# Node Placement
+nodeSelector:
+  role: logging
+  failure-domain.beta.kubernetes.io/zone: us-east-1a
+
+# Pod Scheduling
+tolerations:
+  - key: logging
+    operator: Exists
+    effect: NoSchedule
+
+# Anti-Affinity Rules
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - elasticsearch-master
+        topologyKey: kubernetes.io/hostname
+
+# Environment Variables
+extraEnvs:
+  - name: ES_JAVA_OPTS
+    value: "${ELASTICSEARCH_JAVA_OPTS}"
+  - name: ELASTIC_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: elasticsearch-credentials
+        key: password
+  - name: SNAPSHOT_SCHEDULE
+    value: "${ELASTICSEARCH_SNAPSHOT_SCHEDULE}"
+
+# Health Checks
+readinessProbe:
+  initialDelaySeconds: 90
+  periodSeconds: 30
+  timeoutSeconds: 15
+  successThreshold: 1
+  failureThreshold: 3
+  httpGet:
+    path: /_cluster/health?local=true
+    port: 9200
+    scheme: HTTP
+
+livenessProbe:
+  initialDelaySeconds: 180
+  periodSeconds: 30
+  timeoutSeconds: 15
+  failureThreshold: 3
+  httpGet:
+    path: /_cluster/health?local=true
+    port: 9200
+    scheme: HTTP
