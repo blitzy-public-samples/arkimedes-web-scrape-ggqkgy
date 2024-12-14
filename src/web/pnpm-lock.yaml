@@ -1,0 +1,158 @@
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+dependencies:
+  '@mui/material':
+    version: 5.14.0
+    resolved: 'https://registry.npmjs.org/@mui/material/-/material-5.14.0.tgz'
+    integrity: sha512-4J6z2J8dxZk7xo8NCV8P2jR0z8lz5HzrHD8kHe9YR4u4+2L8J5Gx9H6X5qYqKtBf+9Lb8Ao9CaJcUCz7+Yk8Aw==
+    dependencies:
+      '@mui/base': 5.0.0-beta.4
+      '@mui/system': 5.14.0
+      '@mui/types': 7.2.4
+      '@mui/utils': 5.13.7
+      '@types/react-transition-group': 4.4.6
+      clsx: 1.2.1
+      csstype: 3.1.2
+      prop-types: 15.8.1
+      react-is: 18.2.0
+      react-transition-group: 4.4.5
+
+  '@mui/icons-material':
+    version: 5.14.0
+    resolved: 'https://registry.npmjs.org/@mui/icons-material/-/icons-material-5.14.0.tgz'
+    integrity: sha512-vZ5L8Vo8i9z9XJ1J8R1R8L8K/tK9F8Zk8H8N1D7e8EmZDw4Xn7yQvx3T4LR8PtUE8RZ5K9Gd4Vk9Ri4D8R9Yg==
+    dependencies:
+      '@mui/material': 5.14.0
+
+  '@reduxjs/toolkit':
+    version: 1.9.5
+    resolved: 'https://registry.npmjs.org/@reduxjs/toolkit/-/toolkit-1.9.5.tgz'
+    integrity: sha512-Rt97jHmfTeaxL7Zj9H8n4JxzR4z6B7GqLwR7Eq1Hp9v1Lm+8HJ5F1Tp7HgN8Sb5Kt5eJ6Yt4w9l4K5Xb5XzA==
+    dependencies:
+      immer: 9.0.21
+      redux: 4.2.1
+      redux-thunk: 2.4.2
+      reselect: 4.1.8
+
+  react:
+    version: 18.2.0
+    resolved: 'https://registry.npmjs.org/react/-/react-18.2.0.tgz'
+    integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==
+    dependencies:
+      loose-envify: 1.4.0
+
+  react-dom:
+    version: 18.2.0
+    resolved: 'https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz'
+    integrity: sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==
+    dependencies:
+      loose-envify: 1.4.0
+      scheduler: 0.23.0
+
+  react-hook-form:
+    version: 7.45.1
+    resolved: 'https://registry.npmjs.org/react-hook-form/-/react-hook-form-7.45.1.tgz'
+    integrity: sha512-vK8y5UEe1iqS/5WPx6JEh7EXc+C8ZcUqKb/FIKtBw+qUqmZy7JqG6Ux7Iq5bX7+x9mR/ZZj9dK8Hf5TXd6Zz1Ow==
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18
+
+  react-query:
+    version: 4.0.0
+    resolved: 'https://registry.npmjs.org/react-query/-/react-query-4.0.0.tgz'
+    integrity: sha512-qiW+Yvbl+EK8iwPDJAj4qYzeCUIih9j/PLJJjE9P0GcW4kTwfj9k0NlxO7vKrY1mbyzpcF7O+aeUzd5eUA/9Q==
+    dependencies:
+      '@tanstack/query-core': 4.29.19
+
+  d3:
+    version: 7.8.5
+    resolved: 'https://registry.npmjs.org/d3/-/d3-7.8.5.tgz'
+    integrity: sha512-JutF9Q2EZlFB5qj7G5F8d6jL9Wz3VB5e6u4zWuP4Ql5qJaF9aBhqL3nGwvUe9DIwC7/WZr5BBqvOI0Dq9Yl6Ow==
+
+devDependencies:
+  typescript:
+    version: 5.0.2
+    resolved: 'https://registry.npmjs.org/typescript/-/typescript-5.0.2.tgz'
+    integrity: sha512-wJ9tJ1H5gZ5TzK5gZ8Td8U9x5N5z9M9CzX8g5gZ5gZ5N5N5N5N5N5N5N5N5gZ5N5gZ5==
+
+  vite:
+    version: 4.4.9
+    resolved: 'https://registry.npmjs.org/vite/-/vite-4.4.9.tgz'
+    integrity: sha512-2mbVvq1jZZz7YKqbK9VvXVjZ9a6HZL6Ij5R5/uV5z5H5N5N5N5N5N5N5N5N5N5N5gZ5gZ5==
+    hasBin: true
+    dependencies:
+      esbuild: 0.18.17
+      postcss: 8.4.27
+      rollup: 3.26.3
+
+  jest:
+    version: 29.6.1
+    resolved: 'https://registry.npmjs.org/jest/-/jest-29.6.1.tgz'
+    integrity: sha512-2mbVvq1jZZz7YKqbK9VvXVjZ9a6HZL6Ij5R5/uV5z5H5N5N5N5N5N5N5N5N5N5N5N5gZ5gZ5==
+    hasBin: true
+    dependencies:
+      '@jest/core': 29.6.1
+      '@jest/types': 29.6.1
+      import-local: 3.1.0
+      jest-cli: 29.6.1
+
+  eslint:
+    version: 8.44.0
+    resolved: 'https://registry.npmjs.org/eslint/-/eslint-8.44.0.tgz'
+    integrity: sha512-2mbVvq1jZZz7YKqbK9VvXVjZ9a6HZL6Ij5R5/uV5z5H5N5N5N5N5N5N5N5N5N5N5N5gZ5gZ5==
+    hasBin: true
+    dependencies:
+      '@eslint/eslintrc': 2.1.0
+      '@humanwhocodes/config-array': 0.11.10
+      '@humanwhocodes/module-importer': 1.0.1
+      ajv: 6.12.6
+      chalk: 4.1.2
+      cross-spawn: 7.0.3
+      debug: 4.3.4
+      doctrine: 3.0.0
+      escape-string-regexp: 4.0.0
+      eslint-scope: 7.2.1
+      eslint-utils: 3.0.0
+      eslint-visitor-keys: 3.4.1
+      espree: 9.6.0
+      esquery: 1.5.0
+      esutils: 2.0.3
+      fast-deep-equal: 3.1.3
+      file-entry-cache: 6.0.1
+      find-up: 5.0.0
+      glob-parent: 6.0.2
+      globals: 13.20.0
+      grapheme-splitter: 1.0.4
+      ignore: 5.2.4
+      import-fresh: 3.3.0
+      imurmurhash: 0.1.4
+      is-glob: 4.0.3
+      is-path-inside: 3.0.3
+      js-yaml: 4.1.0
+      json-stable-stringify-without-jsonify: 1.0.1
+      levn: 0.4.1
+      lodash.merge: 4.6.2
+      minimatch: 3.1.2
+      natural-compare: 1.4.0
+      optionator: 0.9.3
+      strip-ansi: 6.0.1
+      strip-json-comments: 3.1.1
+      text-table: 0.2.0
+
+  '@typescript-eslint/eslint-plugin':
+    version: 5.61.0
+    resolved: 'https://registry.npmjs.org/@typescript-eslint/eslint-plugin/-/eslint-plugin-5.61.0.tgz'
+    integrity: sha512-2mbVvq1jZZz7YKqbK9VvXVjZ9a6HZL6Ij5R5/uV5z5H5N5N5N5N5N5N5N5N5N5N5N5gZ5gZ5==
+    dependencies:
+      '@typescript-eslint/scope-manager': 5.61.0
+      '@typescript-eslint/type-utils': 5.61.0
+      '@typescript-eslint/utils': 5.61.0
+      debug: 4.3.4
+      grapheme-splitter: 1.0.4
+      ignore: 5.2.4
+      natural-compare-lite: 1.4.0
+      semver: 7.5.3
+      tsutils: 3.21.0
