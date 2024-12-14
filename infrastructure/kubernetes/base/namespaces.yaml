@@ -1,0 +1,71 @@
+# Kubernetes version: 1.27+
+# Purpose: Define namespaces for web scraping platform components with security and monitoring configurations
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: app
+  labels:
+    name: app
+    environment: production
+    app: web-scraper
+    component: main
+    managed-by: kustomize
+  annotations:
+    description: "Main application namespace for web scraping platform components"
+    security.kubernetes.io/enforce-pod-security: restricted
+    monitoring.kubernetes.io/scrape: "true"
+    logging.kubernetes.io/collect: "true"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    name: monitoring
+    environment: production
+    app: web-scraper
+    component: observability
+    managed-by: kustomize
+  annotations:
+    description: "Monitoring namespace for Prometheus, Grafana, and other observability tools"
+    security.kubernetes.io/enforce-pod-security: restricted
+    monitoring.kubernetes.io/scrape: "true"
+    logging.kubernetes.io/collect: "true"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: logging
+  labels:
+    name: logging
+    environment: production
+    app: web-scraper
+    component: logging
+    managed-by: kustomize
+  annotations:
+    description: "Logging namespace for ELK stack and log aggregation"
+    security.kubernetes.io/enforce-pod-security: restricted
+    monitoring.kubernetes.io/scrape: "true"
+    logging.kubernetes.io/collect: "true"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingress
+  labels:
+    name: ingress
+    environment: production
+    app: web-scraper
+    component: networking
+    managed-by: kustomize
+  annotations:
+    description: "Ingress namespace for NGINX ingress controller and related components"
+    security.kubernetes.io/enforce-pod-security: restricted
+    monitoring.kubernetes.io/scrape: "true"
+    logging.kubernetes.io/collect: "true"
+    networking.kubernetes.io/ingress-class: nginx
