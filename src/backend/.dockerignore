@@ -1,0 +1,84 @@
+# Python cache files
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.python-version
+
+# Test and coverage files
+.pytest_cache
+.coverage
+htmlcov
+tests
+
+# Version control
+.git
+.gitignore
+
+# Environment and secrets
+.env
+.env.*
+**/*.pem
+**/*.key
+**/*.cert
+**/*.crt
+
+# Documentation
+**/*.md
+docs
+CHANGELOG
+AUTHORS
+LICENSE
+
+# Docker files
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+Dockerfile
+
+# Development environments
+.venv
+venv
+env
+virtualenv
+
+# IDE configurations
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
+.editorconfig
+
+# Runtime files
+logs
+*.log
+data
+tmp
+temp
+.cache
+
+# Build artifacts
+*.egg-info
+dist
+build
+wheels
+
+# Dependency management
+poetry.lock
+pip-log.txt
+requirements.dev.txt
+
+# Linting and formatting
+.pylintrc
+.flake8
+.isort.cfg
+mypy.ini
+.style.yapf
+
+# Debugging
+.ipynb_checkpoints
+*.ipynb
+
+# System files
+.DS_Store
+Thumbs.db
