@@ -1,0 +1,58 @@
+Dimensions:
+- Width: 192 pixels
+- Height: 192 pixels
+- Aspect ratio: 1:1 (square)
+
+Format:
+- File type: PNG
+- Compression: Lossless
+- Optimization: 
+  - Optimal compression level
+  - Stripped metadata
+  - Preserved transparency
+
+Color and Transparency:
+- Color space: sRGB
+- Transparent background
+- Full alpha channel support
+
+PWA Requirements:
+- Purpose: "any" and "maskable"
+- Safe zone: Inner 40% of image area
+- Minimum padding: 10% from edges
+- Material Design grid alignment
+
+Accessibility:
+- Minimum contrast ratio: 4.5:1
+- Scaling support: 16x16 to 512x512
+- Clear visibility at all sizes
+
+Platform Adaptations:
+- iOS: Rounded corners, no precomposed icon
+- Android: Adaptive icon support, Material Design compliant
+- Browser: Favicon scaling support, high-DPI ready
+
+Usage Contexts:
+- PWA installation icon
+- App launcher icon
+- Browser favicon (scaled)
+- Touch icon for iOS
+- Android adaptive icon
+- High-resolution displays
+
+Caching:
+- Cache-Control: public, max-age=31536000
+- ETag enabled
+- Immutable resource
+
+Security:
+- CSP: img-src 'self'
+- SRI not required
+
+Design Guidelines:
+1. Follow Material Design 3.0 principles
+2. Ensure visibility in both light and dark themes
+3. Maintain clarity at all supported sizes
+4. Use safe zone for primary content
+5. Implement proper padding for maskable icon
+6. Optimize for high-resolution displays
