@@ -1,0 +1,52 @@
+node_modules
+
+# Build outputs
+dist
+
+# Test files and coverage
+coverage
+tests
+*.test.*
+*.spec.*
+jest.config.ts
+
+# Version control
+.git
+
+# Logs and debugging
+*.log
+
+# Environment and secrets
+.env*
+
+# Documentation
+README.md
+
+# Docker files
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Development configs
+.eslintrc.json
+.prettierrc
+.vscode
+.husky
+
+# IDE specific
+.idea
+*.swp
+*.swo
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Cache directories
+.cache
+.npm
+.yarn
+
+# Temporary files
+*.tmp
+*.temp
