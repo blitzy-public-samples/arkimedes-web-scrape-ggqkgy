@@ -1,0 +1,204 @@
+# Prometheus Helm Chart Values Configuration
+# Chart Version: prometheus-community/prometheus@15.0.0
+# Kubernetes Version: 1.27+
+
+# Global configuration
+global:
+  evaluation_interval: 30s
+  scrape_interval: 30s
+  scrape_timeout: 10s
+  external_labels:
+    environment: production
+    cluster: scraping-platform
+
+# Prometheus server configuration
+server:
+  enabled: true
+  replicaCount: 2
+
+  image:
+    repository: prom/prometheus
+    tag: v2.44.0
+    pullPolicy: IfNotPresent
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+  retention: 30d
+  retentionSize: 50GB
+
+  persistentVolume:
+    enabled: true
+    size: 100Gi
+    storageClass: gp2
+    accessModes:
+      - ReadWriteOnce
+    annotations:
+      backup.velero.io/backup-volumes: prometheus-data
+    retainPolicy: Retain
+
+  securityContext:
+    fsGroup: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+    runAsUser: 65534
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    hosts:
+      - prometheus.scraping-platform.com
+    tls:
+      - secretName: prometheus-tls
+        hosts:
+          - prometheus.scraping-platform.com
+
+  extraFlags:
+    - web.enable-lifecycle
+    - storage.tsdb.wal-compression
+    - storage.tsdb.allow-overlapping-blocks
+
+# Alertmanager configuration
+alertmanager:
+  enabled: true
+  replicaCount: 2
+
+  config:
+    global:
+      resolve_timeout: 5m
+      smtp_smarthost: smtp.scraping-platform.com:587
+      smtp_from: alerts@scraping-platform.com
+      smtp_auth_username: ${SMTP_USERNAME}
+      smtp_auth_password: ${SMTP_PASSWORD}
+
+    route:
+      group_by: ['job', 'severity', 'alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      receiver: default
+      routes:
+        - match:
+            severity: critical
+          receiver: pager-duty
+          repeat_interval: 4h
+
+    receivers:
+      - name: default
+        email_configs:
+          - to: alerts@scraping-platform.com
+            send_resolved: true
+      - name: pager-duty
+        pagerduty_configs:
+          - service_key: ${PAGERDUTY_KEY}
+            send_resolved: true
+
+# Scrape configurations
+scrapeConfigs:
+  # Kubernetes pod discovery
+  - job_name: kubernetes-pods
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: go_.*
+        action: drop
+
+  # Scraping platform services
+  - job_name: scraping-platform
+    metrics_path: /metrics
+    scheme: https
+    tls_config:
+      insecure_skip_verify: false
+      ca_file: /etc/prometheus/certs/ca.crt
+    static_configs:
+      - targets:
+          - backend-service.app.svc.cluster.local:8000
+          - scraper-service.app.svc.cluster.local:8000
+          - api-gateway.app.svc.cluster.local:3000
+        labels:
+          environment: production
+          app: scraping-platform
+
+# Network policies
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: grafana
+      ports:
+        - port: 9090
+          protocol: TCP
+
+# Service account configuration
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/prometheus-role
+  automountServiceAccountToken: true
+
+# RBAC configuration
+rbac:
+  create: true
+  pspEnabled: false
+
+# Kubernetes service configuration
+service:
+  type: ClusterIP
+  sessionAffinity: ClientIP
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+
+# Node selection and affinity
+nodeSelector:
+  monitoring: "true"
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - prometheus
+        topologyKey: kubernetes.io/hostname
+
+tolerations:
+  - key: monitoring
+    operator: Exists
+    effect: NoSchedule
