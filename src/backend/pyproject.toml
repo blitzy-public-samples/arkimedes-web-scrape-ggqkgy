@@ -1,0 +1,97 @@
+[tool.poetry]
+name = "web-scraping-platform"
+version = "1.0.0"
+description = "Enterprise-grade web scraping platform for automated data collection"
+authors = ["Web Scraping Platform Team"]
+license = "MIT"
+repository = "https://github.com/org/web-scraping-platform"
+documentation = "https://docs.web-scraping-platform.org"
+keywords = ["web-scraping", "data-collection", "automation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11"
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.100.0"  # High-performance web framework
+playwright = "^1.38.0"  # Browser automation
+aiohttp = "^3.8.5"  # Async HTTP client/server
+sqlalchemy = "^2.0.0"  # SQL toolkit and ORM
+pydantic = "^2.0.0"  # Data validation
+beautifulsoup4 = "^4.12.0"  # HTML parsing
+alembic = "^1.12.0"  # Database migrations
+redis = "^7.0.0"  # Caching and rate limiting
+prometheus-client = "^0.17.0"  # Metrics collection
+python-jose = "^3.3.0"  # JWT handling
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"  # Testing framework
+black = "^23.7.0"  # Code formatting
+isort = "^5.12.0"  # Import sorting
+mypy = "^1.5.0"  # Static type checking
+pytest-cov = "^4.1.0"  # Coverage reporting
+pytest-asyncio = "^0.21.0"  # Async test support
+safety = "^2.3.0"  # Vulnerability scanning
+
+[build-system]
+requires = ["poetry-core>=1.5.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+test = "pytest"
+format = "black . && isort ."
+lint = "mypy . && flake8"
+start = "uvicorn src.api.server:app --reload"
+security-check = "safety check"
+benchmark = "pytest benchmarks/"
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+
+[tool.mypy]
+python_version = "3.11"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
+strict_optional = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --cov=src --cov-report=term-missing"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError"
+]
