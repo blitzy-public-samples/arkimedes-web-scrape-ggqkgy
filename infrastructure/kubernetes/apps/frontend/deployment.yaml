@@ -1,0 +1,129 @@
+# Frontend Deployment Manifest
+# Version: 1.0.0
+# Purpose: Defines the deployment configuration for the React-based frontend application
+# Dependencies:
+# - frontend-config (ConfigMap)
+# - frontend-service (Service)
+# - frontend-hpa (HorizontalPodAutoscaler)
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: web-scraper
+  labels:
+    app: frontend
+    component: ui
+    part-of: web-scraper
+    version: latest
+  annotations:
+    kubernetes.io/change-cause: "Initial deployment"
+    deployment.kubernetes.io/revision: "1"
+
+spec:
+  # High availability configuration with 2 replicas
+  replicas: 2
+  
+  # Zero-downtime rolling update strategy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  
+  # Pod selector for deployment management
+  selector:
+    matchLabels:
+      app: frontend
+      component: ui
+  
+  template:
+    metadata:
+      labels:
+        app: frontend
+        component: ui
+        part-of: web-scraper
+        version: latest
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "80"
+        prometheus.io/path: "/metrics"
+    
+    spec:
+      # Container specifications
+      containers:
+      - name: frontend
+        image: web-scraper/frontend:latest
+        imagePullPolicy: Always
+        
+        # Container port configuration
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        
+        # Resource allocation and limits
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        
+        # Environment configuration from ConfigMap
+        envFrom:
+        - configMapRef:
+            name: frontend-config
+        
+        # Health check probes
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 30
+      
+      # Enhanced security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      
+      # Grace period for pod termination
+      terminationGracePeriodSeconds: 30
+      
+      # Pod anti-affinity for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: frontend
+              topologyKey: kubernetes.io/hostname
