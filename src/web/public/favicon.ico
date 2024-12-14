@@ -1,0 +1,40 @@
+Format: ICO (Windows Icon)
+Dimensions: Multi-resolution icon containing:
+- 16x16 pixels (browser tabs)
+- 32x32 pixels (taskbar)
+- 48x48 pixels (shortcuts)
+
+Color Properties:
+- Bit depth: 32-bit RGBA
+- Primary color: #1976d2 (Material Design Blue)
+- Background: Transparent
+- Color profile: sRGB
+
+Design:
+- Simple, geometric "WS" monogram representing "Web Scraping"
+- Material Design 3.0 principles
+- High contrast for visibility
+- Clean edges for small size legibility
+
+Optimization:
+- Lossless compression
+- Target file size: < 10KB
+- Multiple resolutions in single ICO container
+- Optimized for both light and dark modes
+
+Technical Generation Command:
+convert -background transparent \
+        -fill "#1976d2" \
+        -font "Roboto-Bold" \
+        -size 48x48 \
+        label:"WS" \
+        -resize 48x48 favicon-48.png && \
+convert favicon-48.png \
+        -resize 32x32 favicon-32.png && \
+convert favicon-48.png \
+        -resize 16x16 favicon-16.png && \
+convert favicon-16.png favicon-32.png favicon-48.png favicon.ico
+
+Server Configuration:
+Cache-Control: public, max-age=604800, immutable
+Content-Type: image/x-icon
