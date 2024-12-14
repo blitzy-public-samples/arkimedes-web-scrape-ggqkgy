@@ -1,0 +1,228 @@
+name: Security Scanning
+
+on:
+  schedule:
+    # Weekly scan on Sunday at midnight
+    - cron: '0 0 * * 0'
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/backend/**'
+      - 'src/web/**'
+      - 'infrastructure/**'
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18.x'
+  SEVERITY_THRESHOLD: 'high'
+  SCAN_TIMEOUT: '30m'
+  RETRY_ATTEMPTS: '3'
+
+jobs:
+  backend_security:
+    name: Backend Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        working-directory: src/backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install --no-root
+
+      - name: Run Snyk Python scan
+        uses: snyk/actions/python@v3
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: >
+            --severity-threshold=${{ env.SEVERITY_THRESHOLD }}
+            --all-projects
+            --sarif-file-output=snyk-python-results.sarif
+          working-directory: src/backend
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.11.2
+        with:
+          scan-type: 'fs'
+          scan-ref: 'src/backend'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          timeout: ${{ env.SCAN_TIMEOUT }}
+
+      - name: Run Trivy container scan
+        uses: aquasecurity/trivy-action@0.11.2
+        with:
+          image-ref: 'src/backend/Dockerfile'
+          format: 'sarif'
+          output: 'trivy-container-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          timeout: ${{ env.SCAN_TIMEOUT }}
+
+      - name: Run CodeQL analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: python
+          queries: security-extended
+          ram: 6144
+          threads: 4
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-security-results
+          path: |
+            snyk-python-results.sarif
+            trivy-fs-results.sarif
+            trivy-container-results.sarif
+          retention-days: 90
+
+  frontend_security:
+    name: Frontend Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Node.js dependencies
+        working-directory: src/web
+        run: npm ci
+
+      - name: Run Snyk Node.js scan
+        uses: snyk/actions/node@v3
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: >
+            --severity-threshold=${{ env.SEVERITY_THRESHOLD }}
+            --all-projects
+            --sarif-file-output=snyk-node-results.sarif
+          working-directory: src/web
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.11.2
+        with:
+          scan-type: 'fs'
+          scan-ref: 'src/web'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          timeout: ${{ env.SCAN_TIMEOUT }}
+
+      - name: Run CodeQL analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: javascript
+          queries: security-and-quality
+          ram: 6144
+          threads: 4
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-security-results
+          path: |
+            snyk-node-results.sarif
+            trivy-fs-results.sarif
+          retention-days: 90
+
+  infrastructure_security:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Run Trivy config scan
+        uses: aquasecurity/trivy-action@0.11.2
+        with:
+          scan-type: 'config'
+          scan-ref: 'infrastructure'
+          format: 'sarif'
+          output: 'trivy-config-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          timeout: ${{ env.SCAN_TIMEOUT }}
+
+      - name: Run Snyk IaC scan
+        uses: snyk/actions/iac@v3
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: >
+            --severity-threshold=${{ env.SEVERITY_THRESHOLD }}
+            --sarif-file-output=snyk-iac-results.sarif
+          working-directory: infrastructure
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: infrastructure-security-results
+          path: |
+            trivy-config-results.sarif
+            snyk-iac-results.sarif
+          retention-days: 90
+
+  security_report:
+    name: Generate Security Report
+    needs: [backend_security, frontend_security, infrastructure_security]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: security-results
+
+      - name: Process security results
+        run: |
+          echo "Security Scan Summary" > security-summary.md
+          echo "===================" >> security-summary.md
+          echo "Scan completed at: $(date)" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          for dir in security-results/*; do
+            echo "## $(basename $dir)" >> security-summary.md
+            echo "Results available in SARIF format" >> security-summary.md
+            echo "" >> security-summary.md
+          done
+
+      - name: Upload summary report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-summary
+          path: security-summary.md
+          retention-days: 90
