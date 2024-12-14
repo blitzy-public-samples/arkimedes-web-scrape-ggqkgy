@@ -1,0 +1,46 @@
+# Frontend Service manifest for web scraping platform
+# Version: v1
+# Purpose: Exposes frontend UI pods with load balancing and monitoring
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: frontend-service
+  namespace: web-scraper
+  labels:
+    app: frontend
+    component: ui
+    tier: frontend
+    part-of: web-scraper
+    managed-by: kubernetes
+  annotations:
+    # Prometheus monitoring configuration
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "80"
+    prometheus.io/path: "/metrics"
+    # Service descriptions and configurations
+    service.kubernetes.io/description: "Frontend UI service for web scraping platform"
+    service.kubernetes.io/load-balancer-class: "internal"
+
+spec:
+  # Using ClusterIP for internal Kubernetes networking
+  type: ClusterIP
+  
+  # Port configuration for HTTP traffic
+  ports:
+    - port: 80          # Service port
+      targetPort: 80    # Container port
+      protocol: TCP
+      name: http       # Named port for easier reference
+  
+  # Pod selector for service targeting
+  selector:
+    app: frontend
+    component: ui
+  
+  # Load balancing configuration
+  sessionAffinity: None  # No session stickiness for better distribution
+  
+  # Only route traffic to ready pods
+  publishNotReadyAddresses: false
