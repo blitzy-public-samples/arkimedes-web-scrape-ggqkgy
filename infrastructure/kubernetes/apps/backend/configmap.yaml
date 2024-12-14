@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: web-scraper
+  labels:
+    app: web-scraper
+    component: backend
+    environment: production
+data:
+  # Application Settings
+  APP_NAME: "Web Scraping Platform"
+  VERSION: "1.0.0"
+  ENVIRONMENT: "production"
+  API_V1_PREFIX: "/api/v1"
+  DEBUG: "false"
+  LOG_LEVEL: "INFO"
+  TIMEZONE: "UTC"
+
+  # Security Settings
+  ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+  REFRESH_TOKEN_EXPIRE_DAYS: "7"
+  ALLOWED_HOSTS: "*"
+  CORS_ORIGINS: "https://web-scraper.example.com"
+  SSL_ENABLED: "true"
+  SECURE_HEADERS: "true"
+  AUTH_REQUIRED: "true"
+  MFA_ENABLED: "true"
+
+  # Database Settings
+  # PostgreSQL Configuration
+  POSTGRES_DB: "scraping_platform"
+  POSTGRES_HOST: "postgres-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_MAX_CONNECTIONS: "100"
+  POSTGRES_POOL_SIZE: "20"
+
+  # MongoDB Configuration
+  MONGODB_DB: "scraping_data"
+  MONGODB_HOST: "mongodb-service"
+  MONGODB_PORT: "27017"
+  MONGODB_MAX_POOL_SIZE: "100"
+
+  # Redis Configuration
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_MAX_CONNECTIONS: "100"
+  REDIS_TIMEOUT: "5"
+
+  # Performance Settings
+  MAX_CONCURRENT_TASKS: "100"
+  RATE_LIMIT_PER_MINUTE: "1000"
+  REQUEST_TIMEOUT_SECONDS: "30"
+  WORKER_THREADS: "4"
+  BATCH_SIZE: "50"
+  RETRY_ATTEMPTS: "3"
+  RETRY_DELAY_SECONDS: "5"
+  CIRCUIT_BREAKER_THRESHOLD: "50"
+  CIRCUIT_BREAKER_TIMEOUT: "30"
+
+  # Monitoring Settings
+  ENABLE_METRICS: "true"
+  METRICS_PORT: "9090"
+  HEALTH_CHECK_INTERVAL: "30"
+  TRACING_ENABLED: "true"
+  JAEGER_AGENT_HOST: "jaeger-agent"
+  JAEGER_AGENT_PORT: "6831"
+  LOG_FORMAT: "json"
+  PERFORMANCE_METRICS_ENABLED: "true"
+  ALERT_THRESHOLD_CPU: "80"
+  ALERT_THRESHOLD_MEMORY: "85"
