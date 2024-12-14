@@ -1,0 +1,79 @@
+# Docker Compose configuration for Web Scraping Platform UI development
+# Versions:
+# - node:18-alpine (v18.19.0)
+# - pnpm@8.12.1
+
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: wsp-web-dev
+    ports:
+      # Development server with Hot Module Replacement
+      - "3000:3000"
+      # Node.js debugging port
+      - "9229:9229"
+    volumes:
+      # Source code with hot reloading support
+      - .:/app
+      # Cached node_modules for faster rebuilds
+      - node_modules:/app/node_modules
+      # PNPM store cache
+      - .pnpm-store:/app/.pnpm-store
+    environment:
+      # Application configuration
+      - VITE_APP_NAME=Web Scraping Platform
+      - VITE_API_URL=http://localhost:8000
+      - VITE_API_VERSION=v1
+      - VITE_ENVIRONMENT=development
+      # Node.js configuration
+      - NODE_ENV=development
+      # Development tools
+      - VITE_ENABLE_DEVTOOLS=true
+      - VITE_ENABLE_DEBUG=true
+    working_dir: /app
+    command: pnpm dev
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - web_development
+    deploy:
+      resources:
+        limits:
+          memory: 2Gi
+          cpus: '1.0'
+        reservations:
+          memory: 1Gi
+          cpus: '0.5'
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  node_modules:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/node_modules
+      o: bind
+  .pnpm-store:
+    driver: local
+
+networks:
+  web_development:
+    driver: bridge
+    name: web_dev
+    driver_opts:
+      com.docker.network.bridge.name: web_dev
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "true"
