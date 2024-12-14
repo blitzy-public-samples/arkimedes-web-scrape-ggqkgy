@@ -1,0 +1,57 @@
+# HorizontalPodAutoscaler for frontend deployment
+# Requires metrics-server v0.6.0+ for resource metrics collection
+# Provides automatic scaling based on CPU and memory utilization
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  namespace: web-scraper
+  labels:
+    app: frontend
+    component: ui
+spec:
+  # Target the frontend deployment for scaling
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  
+  # Scaling limits to ensure high availability and optimal resource usage
+  minReplicas: 2  # Minimum replicas to maintain 99.9% uptime
+  maxReplicas: 10 # Maximum replicas to handle peak load of 1000+ pages/minute
+  
+  # Resource metrics for scaling decisions
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70  # Scale when CPU utilization reaches 70%
+    
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80  # Scale when memory utilization reaches 80%
+  
+  # Scaling behavior configuration for stability
+  behavior:
+    # Scale up configuration
+    scaleUp:
+      stabilizationWindowSeconds: 60  # 1-minute window to prevent rapid scaling
+      policies:
+        - type: Pods
+          value: 2  # Add up to 2 pods per scaling event
+          periodSeconds: 60  # Check every minute
+    
+    # Scale down configuration
+    scaleDown:
+      stabilizationWindowSeconds: 300  # 5-minute window for scale down stability
+      policies:
+        - type: Pods
+          value: 1  # Remove 1 pod at a time
+          periodSeconds: 60  # Check every minute
