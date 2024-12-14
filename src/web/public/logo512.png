@@ -1,0 +1,34 @@
+Dimensions: 512x512 pixels
+Format: 32-bit PNG with alpha channel transparency
+Color Space: sRGB
+File Size Target: < 100KB
+
+Key Requirements:
+1. Material Design 3.0 visual hierarchy
+2. Maskable icon support with 10% padding (safe area)
+3. Critical content centered within 80% maskable area
+4. Sharp edges maintained at sizes from 32px to 512px
+5. WCAG 2.1 Level AA contrast compliance
+6. Lossless compression optimization
+7. High-DPI display support (1x-4x scaling)
+8. Transparent background
+9. Purpose: "any maskable" for PWA contexts
+
+Usage Contexts:
+- PWA splash screens
+- App installation banners
+- Home screen icons
+- App stores
+- Task switcher
+- Search results
+- Marketing materials
+- System integration points
+
+Technical Optimization:
+1. ImageOptim processing for web optimization
+2. Cache-first strategy with 1-year max age
+3. Content-based hash for versioning
+4. Maintains clarity at all supported sizes (96px-512px)
+5. Optimized for web delivery while preserving quality
+
+The image should be placed at: src/web/public/logo512.png
