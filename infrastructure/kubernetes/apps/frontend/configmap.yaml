@@ -1,0 +1,58 @@
+# Frontend environment configuration for Web Scraping Platform
+# Version: 1.0
+# Last Updated: 2024-01-20
+# Security Reviewed: true
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: web-scraper
+  labels:
+    app: frontend
+    component: ui
+    environment: production
+    managed-by: kubernetes
+  annotations:
+    description: "Frontend environment configuration"
+    last-updated: "2024-01-20"
+    security-reviewed: "true"
+
+data:
+  # Application Settings
+  # Core application configuration and feature management
+  VITE_APP_NAME: "Web Scraping Platform"
+  VITE_ENVIRONMENT: "production"
+  VITE_FEATURE_FLAGS: |
+    {
+      "realTimeUpdates": true,
+      "analytics": true,
+      "advancedFilters": true
+    }
+
+  # API Configuration
+  # Backend API connection settings with resilience configuration
+  VITE_API_URL: "http://api-gateway.web-scraper.svc.cluster.local"
+  VITE_API_VERSION: "v1"
+  VITE_API_TIMEOUT: "30000"
+  VITE_MAX_RETRIES: "3"
+  VITE_RETRY_DELAY: "1000"
+
+  # Authentication Configuration
+  # OAuth 2.0 authentication settings
+  VITE_AUTH_DOMAIN: "auth.web-scraper.com"
+  VITE_AUTH_AUDIENCE: "https://api.web-scraper.com"
+
+  # Real-time Updates Configuration
+  # WebSocket connection for live updates
+  VITE_WEBSOCKET_URL: "wss://ws.web-scraper.com"
+
+  # Monitoring Configuration
+  # Error tracking and performance monitoring settings
+  VITE_SENTRY_DSN: "https://sentry.web-scraper.com"
+  VITE_METRICS_ENABLED: "true"
+
+  # Security Configuration
+  # Security headers and access control settings
+  VITE_CORS_ALLOWED_ORIGINS: "https://*.web-scraper.com"
+  VITE_CSP_SETTINGS: "default-src 'self'; connect-src 'self' https://*.web-scraper.com wss://*.web-scraper.com"
