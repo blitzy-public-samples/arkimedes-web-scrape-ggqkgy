@@ -1,0 +1,157 @@
+# Fluentd Helm Chart Values v1.16
+# Enterprise-grade log collection and forwarding configuration
+
+image:
+  repository: fluent/fluentd-kubernetes-daemonset
+  tag: v1.16-debian-elasticsearch7-1
+  pullPolicy: IfNotPresent
+  pullSecrets:
+    - regcred
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/fluentd-role
+  name: fluentd
+
+rbac:
+  create: true
+  pspEnabled: true
+  rules:
+    - apiGroups: [""]
+      resources: ["pods", "namespaces"]
+      verbs: ["get", "list", "watch"]
+
+podSecurityPolicy:
+  enabled: true
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: runtime/default
+
+resources:
+  limits:
+    memory: 2Gi
+    cpu: 1000m
+  requests:
+    memory: 1Gi
+    cpu: 500m
+
+persistence:
+  enabled: true
+  storageClass: gp2
+  accessMode: ReadWriteOnce
+  size: 50Gi
+  annotations:
+    backup.velero.io/backup-volumes: buffer-storage
+
+env:
+  FLUENT_ELASTICSEARCH_HOST: elasticsearch-master
+  FLUENT_ELASTICSEARCH_PORT: "9200"
+  FLUENT_ELASTICSEARCH_SCHEME: https
+  FLUENT_ELASTICSEARCH_SSL_VERIFY: "true"
+  FLUENT_ELASTICSEARCH_SSL_VERSION: TLSv1_2
+  FLUENT_ELASTICSEARCH_LOGSTASH_PREFIX: scraping-platform
+  FLUENT_ELASTICSEARCH_RECONNECT_ON_ERROR: "true"
+  FLUENT_ELASTICSEARCH_RELOAD_ON_FAILURE: "true"
+  FLUENT_ELASTICSEARCH_REQUEST_TIMEOUT: 30s
+  FLUENT_ELASTICSEARCH_BUFFER_CHUNK_LIMIT: 8M
+  FLUENT_ELASTICSEARCH_BUFFER_QUEUE_LIMIT: "32"
+  FLUENT_ELASTICSEARCH_FLUSH_INTERVAL: 5s
+
+configMaps:
+  general:
+    enabled: true
+    data:
+      system.conf: |
+        @include system.conf
+        <system>
+          root_dir /var/log/fluentd
+          log_level info
+          workers 4
+        </system>
+      containers.conf: |
+        <match kubernetes.**>
+          @type elasticsearch
+          include_tag_key true
+          retry_limit 10
+          retry_wait 30
+          max_retry_wait 300
+        </match>
+  outputs:
+    enabled: true
+    data:
+      output.conf: |
+        <match **>
+          @type copy
+          <store>
+            @type elasticsearch
+            buffer_type file
+            buffer_path /var/log/fluentd/buffer
+            compress gzip
+            retry_max_interval 30
+            flush_interval 5s
+          </store>
+        </match>
+
+tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+  - key: dedicated
+    operator: Exists
+    effect: NoSchedule
+
+nodeSelector:
+  kubernetes.io/os: linux
+  logging: enabled
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/os
+              operator: In
+              values:
+                - linux
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+
+metrics:
+  enabled: true
+  service:
+    type: ClusterIP
+    port: 24231
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "24231"
+      prometheus.io/path: /metrics
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+    namespace: monitoring
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+  httpGet:
+    path: /metrics
+    port: 24231
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+  httpGet:
+    path: /metrics
+    port: 24231
