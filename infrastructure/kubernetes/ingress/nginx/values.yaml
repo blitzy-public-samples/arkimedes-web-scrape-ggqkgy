@@ -1,0 +1,127 @@
+# NGINX Ingress Controller Helm Values Configuration
+# Version: 4.7.1 (ingress-nginx chart)
+# NGINX Version: 1.25.1
+# Last Updated: 2024
+
+controller:
+  name: ingress-nginx
+  
+  # Container image configuration
+  image:
+    repository: registry.k8s.io/ingress-nginx/controller
+    tag: v1.8.1
+    pullPolicy: IfNotPresent
+  
+  # High availability configuration
+  replicaCount: 2
+  
+  # Resource allocation
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  # Pod anti-affinity for high availability
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+  
+  # Prometheus metrics integration
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
+      additionalLabels:
+        release: prometheus
+      scrapeInterval: 30s
+    prometheusRule:
+      enabled: true
+      rules:
+        - alert: HighErrorRate
+          expr: sum(rate(nginx_ingress_controller_requests{status=~"5.."}[5m])) / sum(rate(nginx_ingress_controller_requests[5m])) * 100 > 5
+          for: 5m
+          labels:
+            severity: critical
+  
+  # NGINX configuration
+  config:
+    # General settings
+    use-forwarded-headers: "true"
+    proxy-buffer-size: "16k"
+    proxy-body-size: "8m"
+    
+    # Connection optimization
+    keep-alive: "75"
+    keep-alive-requests: "100"
+    
+    # SSL/TLS configuration
+    ssl-protocols: "TLSv1.2 TLSv1.3"
+    ssl-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+    ssl-session-tickets: "off"
+    ssl-session-timeout: "10m"
+    
+    # Security configurations
+    enable-modsecurity: "true"
+    enable-owasp-modsecurity-crs: "true"
+    modsecurity-snippet: |
+      SecRuleEngine On
+      SecRequestBodyLimit 10485760
+      SecRequestBodyNoFilesLimit 64000
+      SecRuleUpdateTargetById 942100 "!REQUEST_COOKIES:/^(session|csrf)$/"
+      SecRuleRemoveById 920350
+    
+    # Rate limiting and real IP configuration
+    http-snippet: |
+      limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+      real_ip_header X-Forwarded-For;
+      real_ip_recursive on;
+    
+    # API-specific configuration
+    server-snippet: |
+      location ~ /api/ {
+          limit_req zone=api_limit burst=20 nodelay;
+          proxy_read_timeout 300;
+          proxy_connect_timeout 300;
+          proxy_send_timeout 300;
+      }
+    
+    # Worker process optimization
+    worker-processes: "auto"
+    worker-connections: "65536"
+    worker-rlimit-nofile: "65536"
+    worker-cpu-affinity: "auto"
+    
+    # Compression settings
+    use-gzip: "true"
+    gzip-min-length: "1000"
+    gzip-types: "application/json application/javascript text/css text/plain text/xml"
+
+# Load balancer service configuration
+service:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: ${AWS_ACM_CERT_ARN}
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "60"
+
+# Default ingress class
+ingressClass:
+  name: nginx
+  isDefaultClass: true
+
+# Network policies integration
+networkPolicies:
+  enabled: true
+  policyNamespace: default
+  ingressPolicyName: allow-frontend-ingress
