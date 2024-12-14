@@ -1,0 +1,47 @@
+# Unless a later match takes precedence, @project-maintainers 
+# will be requested for review when someone opens a pull request.
+*       @project-maintainers
+
+# Backend service code ownership
+src/backend/**    @backend-team @senior-backend-engineers
+
+# Frontend application code ownership
+src/web/**    @frontend-team @senior-frontend-engineers
+
+# Security implementation with mandatory security team review
+src/backend/src/api/core/security/**    @security-team @senior-backend-engineers @security-architects
+
+# Web scraping engine with performance considerations
+src/backend/src/scraper/**    @scraping-team @senior-backend-engineers @performance-team
+
+# Infrastructure and deployment configuration
+infrastructure/**    @devops-team @infrastructure-leads @security-architects
+
+# Database migrations requiring data architect review
+src/backend/src/db/migrations/**    @database-team @senior-backend-engineers @data-architects
+
+# Security-specific files requiring multiple security team reviews
+src/**/security.py    @security-team @senior-backend-engineers @security-architects
+
+# Secret management requiring both security and DevOps review
+infrastructure/kubernetes/secrets/**    @security-team @devops-team @security-architects @infrastructure-leads
+
+# Workflow files should be reviewed by DevOps and respective teams
+.github/workflows/backend-ci.yml    @devops-team @backend-team @senior-backend-engineers
+.github/workflows/frontend-ci.yml    @devops-team @frontend-team @senior-frontend-engineers
+.github/workflows/security-scan.yml    @devops-team @security-team @security-architects
+
+# Documentation changes should be reviewed by technical writers and respective teams
+docs/**    @technical-writers @project-maintainers
+
+# Test files should be reviewed by QA team and respective developers
+src/**/tests/**    @qa-team @backend-team @frontend-team
+
+# API specification files require review from API team and architects
+src/**/api/**    @api-team @backend-team @senior-backend-engineers
+
+# Performance-critical components require review from performance team
+src/**/performance/**    @performance-team @senior-backend-engineers
+
+# Data processing components require review from data team
+src/**/data/**    @data-team @senior-backend-engineers @data-architects
