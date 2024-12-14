@@ -1,0 +1,72 @@
+# Kubernetes HorizontalPodAutoscaler v2 configuration for backend service
+# Version: 1.27+
+# Purpose: Automatically scale backend deployment based on resource utilization
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: app
+  labels:
+    app: web-scraper
+    component: backend
+    tier: application
+    managed-by: kubernetes
+  annotations:
+    description: "HPA configuration for Web Scraping Platform Backend"
+    scaling.policy/version: "v1.0"
+    min-replicas: "3"
+    max-replicas: "10"
+
+spec:
+  # Reference to the backend deployment to be scaled
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+
+  # Replica constraints based on high availability requirements
+  minReplicas: 3
+  maxReplicas: 10
+
+  # Resource utilization metrics for scaling decisions
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+  # Advanced scaling behavior configuration
+  behavior:
+    # Scale up behavior - aggressive scaling for performance
+    scaleUp:
+      # Stabilization window to prevent thrashing
+      stabilizationWindowSeconds: 60
+      policies:
+        # Add up to 2 pods every 60 seconds
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+      selectPolicy: Max
+
+    # Scale down behavior - conservative scaling to maintain stability
+    scaleDown:
+      # Longer stabilization window for scale down to prevent premature scaling
+      stabilizationWindowSeconds: 300
+      policies:
+        # Remove 1 pod every 60 seconds
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+      selectPolicy: Min
